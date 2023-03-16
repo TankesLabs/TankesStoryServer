@@ -63,6 +63,7 @@ import service.NoteService;
 import tools.DatabaseConnection;
 import tools.Pair;
 
+import database.RedisManager;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -835,6 +836,8 @@ public class Server {
     public void init() {
         Instant beforeInit = Instant.now();
         log.info("Cosmic v{} starting up.", ServerConstants.VERSION);
+
+        RedisManager.connect();
 
         if (YamlConfig.config.server.SHUTDOWNHOOK) {
             Runtime.getRuntime().addShutdownHook(new Thread(shutdown(false)));
@@ -1938,6 +1941,7 @@ public class Server {
 
         log.info("Worlds and channels are offline.");
         loginServer.stop();
+        RedisManager.close();
         if (!restart) {  // shutdown hook deadlocks if System.exit() method is used within its body chores, thanks MIKE for pointing that out
             // We disabled log4j's shutdown hook in the config file, so we have to manually shut it down here,
             // after our last log statement.

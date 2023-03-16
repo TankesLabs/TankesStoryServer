@@ -10,6 +10,8 @@ public class ServerConfig {
     public String DB_HOST;
     public String DB_USER;
     public String DB_PASS;
+    public String REDIS_HOST;
+    public int REDIS_PORT;
     public int INIT_CONNECTION_POOL_TIMEOUT;
 
     //Login Configuration

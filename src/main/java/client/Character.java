@@ -92,6 +92,8 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import database.RedisManager;
+import redis.clients.jedis.Jedis;
 
 import static java.util.concurrent.TimeUnit.*;
 
@@ -3091,6 +3093,16 @@ public class Character extends AbstractCharacterObject {
                 total = Integer.MAX_VALUE - exp.get();
                 leftover = nextExp - Integer.MAX_VALUE;
             }
+
+            Jedis client = RedisManager.getClient();
+            long currentAccuExp = 0;
+            String key = this.name + "_accumulated_exp";
+            if (client.exists(key)) {
+                currentAccuExp = Long.parseLong(client.get(key));
+            }
+            currentAccuExp += gain;
+            client.set(key, Long.toString(currentAccuExp));
+
             updateSingleStat(Stat.EXP, exp.addAndGet((int) total));
             if (show) {
                 announceExpGain(gain, equip, party, inChat, white);
@@ -3182,6 +3194,15 @@ public class Character extends AbstractCharacterObject {
         }
 
         if (gain != 0) {
+            Jedis client = RedisManager.getClient();
+
+            long currentAccuMesos = 0;
+            String key = this.name + "_accumulated_mesos";
+            if (client.exists(key)) {
+                currentAccuMesos = Long.parseLong(client.get(key));
+            }
+            currentAccuMesos += gain;
+            client.set(key, Long.toString(currentAccuMesos));
             updateSingleStat(Stat.MESO, (int) nextMeso, enableActions);
             if (show) {
                 sendPacket(PacketCreator.getShowMesoGain(gain, inChat));
